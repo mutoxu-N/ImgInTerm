@@ -1,8 +1,11 @@
 use std::io::{stdout, Result, Write};
+use std::thread::sleep;
+use std::time::Duration;
 
 use crossterm::cursor::MoveTo;
 use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
-use crossterm::{queue, terminal};
+use crossterm::terminal::enable_raw_mode;
+use crossterm::{execute, queue, terminal};
 use image::{open, DynamicImage, GenericImageView};
 
 fn main() -> Result<()> {
@@ -14,12 +17,21 @@ fn main() -> Result<()> {
         Err(e) => panic!("{}", e),
     };
 
+    execute!(stdout(), terminal::EnterAlternateScreen).unwrap();
+    enable_raw_mode().unwrap();
+
     display(image);
+
+    sleep(Duration::from_millis(3000));
+    execute!(stdout(), terminal::LeaveAlternateScreen).unwrap();
 
     Ok(())
 }
 
 fn display(image: DynamicImage) {
+    // clear terminal
+    // queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
+
     // get terminal size
     let term_size = terminal::size().unwrap();
     let term_size = (term_size.0 as f64, (term_size.1 * 2) as f64);
