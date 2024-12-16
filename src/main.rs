@@ -1,17 +1,20 @@
 use std::io::Result;
 
 use crossterm::terminal;
-use image::GenericImageView;
+use image::open;
 
 fn main() -> Result<()> {
-    let term_width = terminal::size()?.0;
-    let term_height = terminal::size()?.1;
-    println!("{}x{}", term_width, term_height);
-
-    let image = match image::open("image.png") {
-        Ok(image) => image,
+    let image = match open("image.png") {
+        Ok(image) => image.to_rgba8(),
         Err(e) => panic!("{}", e),
     };
-    println!("dims: {:?}", image.dimensions());
+    display(image);
     Ok(())
+}
+
+fn display(image: image::RgbaImage) {
+    let term_size = terminal::size().unwrap();
+    println!("term_size: {}x{}", term_size.0, term_size.1);
+
+    println!("dims: {:?}", image.dimensions());
 }
