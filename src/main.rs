@@ -6,7 +6,10 @@ use crossterm::{queue, terminal};
 use image::{open, DynamicImage, GenericImageView};
 
 fn main() -> Result<()> {
-    let image = match open("image.png") {
+    let args = std::env::args().collect::<Vec<String>>();
+    println!("args: {:#?}", args);
+
+    let image = match open(&args[1]) {
         Ok(image) => image,
         Err(e) => panic!("{}", e),
     };
