@@ -15,7 +15,7 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
 
     // get terminal size
     let term_size = terminal::size().unwrap();
-    let term_size = (term_size.0 as f64, (term_size.1 * 2) as f64);
+    let term_size = (term_size.0 as f64, ((term_size.1 - 1) * 2) as f64);
     println!("term_size: {}x{}", term_size.0, term_size.1);
 
     if image.is_ok() {
@@ -98,6 +98,7 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
                 .unwrap();
             }
         }
+        queue!(stdout(), MoveTo(0, term_size.1 as u16 / 2 + 1)).unwrap();
         stdout().flush().unwrap();
     } else {
         // Image open error
