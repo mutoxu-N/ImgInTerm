@@ -1,4 +1,5 @@
 mod mod_display;
+mod mod_events;
 
 use std::io::stdout;
 use std::thread::sleep;
@@ -30,7 +31,15 @@ fn main() {
         image_file_path: image_path.to_string(),
     };
     mod_display::display(image, info);
-    sleep(Duration::from_millis(3000));
+    sleep(Duration::from_millis(1000));
+
+    loop {
+        match mod_events::handle_events() {
+            Ok(true) => (),
+            Ok(false) => break,
+            Err(e) => println!("Error: {}", e),
+        }
+    }
 
     // reset terminal
     execute!(stdout(), LeaveAlternateScreen).unwrap();

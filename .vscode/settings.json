@@ -1,6 +1,7 @@
 {
     "code-runner.executorMap": {
 
+
         "javascript": "node",
         "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
         "c": "cd $dir && gcc $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
@@ -32,7 +33,7 @@
         "applescript": "osascript",
         "clojure": "lein exec",
         "haxe": "haxe --cwd $dirWithoutTrailingSlash --run $fileNameWithoutExt",
-        "rust": "cargo run image.png",
+        "rust": "cargo run sample.png",
         "racket": "racket",
         "scheme": "csi -script",
         "ahk": "autohotkey",
