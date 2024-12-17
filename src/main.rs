@@ -4,7 +4,9 @@ use std::time::Duration;
 
 use crossterm::cursor::MoveTo;
 use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
-use crossterm::terminal::enable_raw_mode;
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+};
 use crossterm::{execute, queue, terminal};
 use image::{open, DynamicImage, GenericImageView, ImageError};
 
@@ -22,17 +24,21 @@ fn main() {
         "sample.png"
     };
 
-    execute!(stdout(), terminal::EnterAlternateScreen).unwrap();
+    // set terminal
+    execute!(stdout(), EnterAlternateScreen).unwrap();
     enable_raw_mode().unwrap();
 
+    // main process
     let image = open(image_path);
     let info = DisplayInfo {
         image_file_path: image_path.to_string(),
     };
     display(image, info);
-
     sleep(Duration::from_millis(3000));
-    execute!(stdout(), terminal::LeaveAlternateScreen).unwrap();
+
+    // reset terminal
+    execute!(stdout(), LeaveAlternateScreen).unwrap();
+    disable_raw_mode().unwrap();
 }
 
 fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
