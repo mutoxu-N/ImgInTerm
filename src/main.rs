@@ -5,9 +5,11 @@ use std::io::stdout;
 use std::thread::sleep;
 use std::time::Duration;
 
+use crossterm::cursor::MoveToColumn;
 use crossterm::execute;
+use crossterm::style::Print;
 use crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+    disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use image::open;
 
@@ -37,7 +39,13 @@ fn main() {
         match mod_events::handle_events() {
             Ok(true) => (),
             Ok(false) => break,
-            Err(e) => println!("Error: {}", e),
+            Err(e) => execute!(
+                stdout(),
+                MoveToColumn(0),
+                Print(format!("[info]: {}", e)),
+                Clear(ClearType::UntilNewLine),
+            )
+            .unwrap(),
         }
     }
 

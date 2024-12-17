@@ -22,10 +22,10 @@ pub fn handle_events() -> Result<bool, Error> {
 }
 
 fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
-    println!(
-        "key_event: {:#?}, {:#?}",
-        key_event.modifiers, key_event.code
-    );
+    // println!(
+    //     "key_event: {:#?}, {:#?}",
+    //     key_event.modifiers, key_event.code
+    // );
 
     match key_event.modifiers {
         // simple key
