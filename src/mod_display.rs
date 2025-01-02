@@ -11,7 +11,7 @@ pub struct DisplayInfo {
 
 pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
     // clear terminal
-    // queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
+    queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
 
     // get terminal size
     let term_size = terminal::size().unwrap();

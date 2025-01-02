@@ -10,6 +10,9 @@ use crossterm::event::{read, Event, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::queue;
 use crossterm::style::Print;
 use crossterm::terminal::{Clear, ClearType};
+use image::open;
+
+use crate::mod_display::{display, DisplayInfo};
 
 pub fn handle_events() -> Result<bool, Error> {
     match read() {
@@ -34,6 +37,11 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
             Char('o') => {
                 let file_path = input_new_file_path()?;
                 println!("file_path: {}", file_path);
+                let image = open(file_path.clone());
+                let info = DisplayInfo {
+                    image_file_path: file_path.clone(),
+                };
+                display(image, info);
                 Ok(true)
             }
             _ => Ok(true),
