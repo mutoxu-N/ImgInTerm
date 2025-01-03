@@ -7,9 +7,9 @@ use crossterm::cursor::MoveToColumn;
 
 use crossterm::event::KeyCode::{Backspace, Char, Delete, End, Enter, Esc, Home, Left, Right};
 use crossterm::event::{read, Event, KeyEvent, KeyEventKind, KeyModifiers};
-use crossterm::queue;
 use crossterm::style::Print;
 use crossterm::terminal::{Clear, ClearType};
+use crossterm::{execute, queue};
 use image::open;
 
 use crate::mod_display::{display, DisplayInfo};
@@ -36,7 +36,12 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
             Char('q') => Ok(false),
             Char('o') => {
                 let file_path = input_new_file_path()?;
-                println!("file_path: {}", file_path);
+                execute!(
+                    stdout(),
+                    Clear(ClearType::CurrentLine),
+                    Print(format!("file_path: {}", file_path)),
+                )
+                .unwrap();
                 let image = open(&file_path);
                 let info = DisplayInfo {
                     image_file_path: file_path.clone(),
@@ -58,7 +63,7 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
 fn input_new_file_path() -> Result<String, Error> {
     // show input message
     let input_msg = "input new file path: ";
-    print!("{}", input_msg);
+    execute!(stdout(), Clear(ClearType::CurrentLine), Print(input_msg),).unwrap();
     stdout().flush().unwrap();
 
     // get input

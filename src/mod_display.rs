@@ -1,9 +1,12 @@
+#[warn(unused_imports)]
+#[warn(unused_variables)]
 use std::io::{stdout, Write};
 
 use crossterm::cursor::MoveTo;
 use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
 use crossterm::{queue, terminal};
-use image::{DynamicImage, GenericImageView, ImageError};
+use image::{DynamicImage, GenericImageView, ImageError, RgbaImage};
+use image::{GenericImage, Rgba};
 
 pub struct DisplayInfo {
     pub image_file_path: String,
@@ -14,82 +17,55 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
     queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
 
     // get terminal size
-    let term_size = terminal::size().unwrap();
-    let term_size = (term_size.0 as f64, ((term_size.1 - 1) * 2) as f64);
-    println!("term_size: {}x{}", term_size.0, term_size.1);
-
     if image.is_ok() {
+        // get terminal size
+        let (term_width, term_height) = terminal::size().unwrap();
+
+        // calculate window_size
+        let (win_width, win_height) = (term_width, (term_height - 1) * 2);
+        let (win_width, win_height) = (win_width as u32, win_height as u32);
+
+        // create background
+        let bg_color = Rgba([0, 0, 0, 255]);
+        let mut bg = DynamicImage::ImageRgba8(RgbaImage::new(win_width, win_height));
+        for y in 0..win_height {
+            for x in 0..win_width {
+                bg.put_pixel(x, y, bg_color);
+            }
+        }
+
+        // create buffer
+        let mut buffer = DynamicImage::ImageRgba8(RgbaImage::new(win_width, win_height));
+
         let image = image.unwrap();
+        let image = image.resize(win_width, win_height, image::imageops::FilterType::Nearest);
+        let (img_width, img_height) = image.dimensions();
 
-        // get image size
-        let image_size = image.dimensions();
-        let image_size = (image_size.0 as f64, image_size.1 as f64);
-        println!("image_size: {}x{}", image_size.0, image_size.1);
-
-        // resize image to fit screen with keeping aspect ratio
-        let mut display_size = (image_size.0 / image_size.1 * term_size.1, term_size.1);
-        if display_size.0 > term_size.0 {
-            display_size.0 = term_size.0;
-            display_size.1 = display_size.0 / image_size.0 * image_size.1;
-        }
-        println!("display_size: {}x{}", display_size.0, display_size.1);
-
-        // convert to u32
-        let term_size = (term_size.0 as u32, term_size.1 as u32);
-        let display_size = (display_size.0 as u32, display_size.1 as u32);
-
-        // anchor point
-        let anchor_point = (
-            (term_size.0 - display_size.0) / 2,
-            (term_size.1 - display_size.1) / 2,
-        );
-
-        // resize image
-        let image = image.resize(
-            display_size.0,
-            display_size.1,
-            image::imageops::FilterType::Nearest,
-        );
-
-        println!(
-            "print size: {}x{}",
-            image.dimensions().0,
-            image.dimensions().1
-        );
-
-        for _ in 0..(display_size.1 / 2) {
-            println!();
+        let (anchor_x, anchor_y) = ((win_width - img_width) / 2, (win_height - img_height) / 2);
+        for y in 0..img_height {
+            for x in 0..img_width {
+                let pixel = image.get_pixel(x, y);
+                buffer.put_pixel(x + anchor_x, y + anchor_y, pixel);
+            }
         }
 
-        // print image
-        let image = image.to_rgba8();
-        for y in 0..(display_size.1 / 2) {
-            for x in 0..display_size.0 {
-                let true_y = 2 * y;
-                let upper_pixel = image.get_pixel(x, true_y);
-                let (r1, g1, b1) = (upper_pixel[0], upper_pixel[1], upper_pixel[2]);
+        // display image in terminal from buffer
+        for y in 0..(term_height - 1) {
+            for x in 0..term_width {
+                let (x, y) = (x as u32, y as u32);
+                let true_y = y * 2;
 
-                let upper_color = Color::Rgb {
-                    r: r1,
-                    g: g1,
-                    b: b1,
-                };
+                let upper_pixel = buffer.get_pixel(x, true_y);
+                let upper_bg = bg.get_pixel(x, true_y);
+                let upper_color = blend(upper_pixel, upper_bg);
 
-                let lower_color = if true_y + 1 < (image_size.1 as u32) {
-                    let lower_pixel = image.get_pixel(x, true_y + 1);
-                    let (r2, g2, b2) = (lower_pixel[0], lower_pixel[1], lower_pixel[2]);
-                    Color::Rgb {
-                        r: r2,
-                        g: g2,
-                        b: b2,
-                    }
-                } else {
-                    Color::Rgb { r: 0, g: 0, b: 0 }
-                };
+                let lower_pixel = buffer.get_pixel(x, true_y + 1);
+                let lower_bg = bg.get_pixel(x, true_y + 1);
+                let lower_color = blend(lower_pixel, lower_bg);
 
                 queue!(
                     stdout(),
-                    MoveTo((anchor_point.0 + x) as u16, (anchor_point.1 + y) as u16),
+                    MoveTo(x as u16, y as u16),
                     SetForegroundColor(upper_color),
                     SetBackgroundColor(lower_color),
                     Print("\u{2580}"),
@@ -98,11 +74,26 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
                 .unwrap();
             }
         }
-        queue!(stdout(), MoveTo(0, term_size.1 as u16 / 2 + 1)).unwrap();
+        queue!(
+            stdout(),
+            MoveTo(0, term_height - 1),
+            Print(format!("Image \"{}\" displayed!", info.image_file_path)),
+            MoveTo(0, term_height - 1),
+        )
+        .unwrap();
         stdout().flush().unwrap();
     } else {
         // Image open error
         println!("Error: {}", image.unwrap_err());
         println!("Image path: {}", info.image_file_path);
+    }
+}
+
+fn blend(pixel: Rgba<u8>, bg: Rgba<u8>) -> Color {
+    let alpha = pixel[3] as f64 / 255.0;
+    Color::Rgb {
+        r: (pixel[0] as f64 * alpha + bg[0] as f64 * (1.0 - alpha)) as u8,
+        g: (pixel[1] as f64 * alpha + bg[1] as f64 * (1.0 - alpha)) as u8,
+        b: (pixel[2] as f64 * alpha + bg[2] as f64 * (1.0 - alpha)) as u8,
     }
 }
