@@ -10,6 +10,8 @@ use image::{GenericImage, Rgba};
 
 pub struct DisplayInfo {
     pub image_file_path: String,
+    pub magnify: f64,
+    pub center: (f64, f64),
 }
 
 pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
@@ -34,12 +36,40 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
             }
         }
 
+        // load, resize and clip image
+        let mut image = image.unwrap();
+        let image = if info.center.0 < 0.0 || info.center.1 < 0.0 {
+            // if default size
+            image.resize(win_width, win_height, image::imageops::FilterType::Nearest)
+        } else {
+            // if clipping needed
+            let (img_width, img_height) = image.dimensions();
+            let (img_width, img_height) = (img_width as f64, img_height as f64);
+            let (clip_width, clip_height) =
+                if img_height / img_width > win_height as f64 / win_width as f64 {
+                    // fit height
+                    (
+                        img_height / win_height as f64 * win_width as f64,
+                        img_height,
+                    )
+                } else {
+                    // fit width
+                    (img_width, img_width / win_width as f64 * win_height as f64)
+                };
+            let (clip_width, clip_height) = (clip_width / info.magnify, clip_height / info.magnify);
+
+            let (l, t) = (
+                (info.center.0 - clip_width / 2.0) as u32,
+                (info.center.1 - clip_height / 2.0) as u32,
+            );
+            image
+                .crop(l, t, clip_width as u32, clip_height as u32)
+                .resize(win_width, win_height, image::imageops::FilterType::Nearest)
+        };
+        let (img_width, img_height) = image.dimensions();
+
         // create buffer
         let mut buffer = DynamicImage::ImageRgba8(RgbaImage::new(win_width, win_height));
-
-        let image = image.unwrap();
-        let image = image.resize(win_width, win_height, image::imageops::FilterType::Nearest);
-        let (img_width, img_height) = image.dimensions();
 
         let (anchor_x, anchor_y) = ((win_width - img_width) / 2, (win_height - img_height) / 2);
         for y in 0..img_height {

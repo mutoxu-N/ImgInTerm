@@ -45,6 +45,8 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
                 let image = open(&file_path);
                 let info = DisplayInfo {
                     image_file_path: file_path.clone(),
+                    magnify: 1.0,
+                    center: (-1.0, -1.0),
                 };
                 display(image, info);
                 Ok(true)

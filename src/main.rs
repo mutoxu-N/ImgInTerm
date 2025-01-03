@@ -31,6 +31,8 @@ fn main() {
     let image = open(image_path);
     let info = mod_display::DisplayInfo {
         image_file_path: image_path.to_string(),
+        magnify: 1.0,
+        center: (-1.0, -1.0),
     };
     mod_display::display(image, info);
     sleep(Duration::from_millis(1000));
