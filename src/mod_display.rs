@@ -1,5 +1,3 @@
-#[warn(unused_imports)]
-#[warn(unused_variables)]
 use std::io::{stdout, Write};
 
 use crossterm::cursor::MoveTo;
@@ -8,13 +6,14 @@ use crossterm::{queue, terminal};
 use image::{DynamicImage, GenericImageView, ImageError, RgbaImage};
 use image::{GenericImage, Rgba};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct DisplayInfo {
     pub image_file_path: String,
     pub magnify: f64,
     pub center: (f64, f64),
 }
 
-pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
+pub fn display(image: Result<DynamicImage, ImageError>, info: &mut DisplayInfo) {
     // clear terminal
     queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
 
@@ -40,6 +39,7 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
         let mut image = image.unwrap();
         let image = if info.center.0 < 0.0 || info.center.1 < 0.0 {
             // if default size
+            info.center = (image.width() as f64 / 2.0, image.height() as f64 / 2.0);
             image.resize(win_width, win_height, image::imageops::FilterType::Nearest)
         } else {
             // if clipping needed
@@ -107,7 +107,11 @@ pub fn display(image: Result<DynamicImage, ImageError>, info: DisplayInfo) {
         queue!(
             stdout(),
             MoveTo(0, term_height - 1),
-            Print(format!("Image \"{}\" displayed!", info.image_file_path)),
+            // Print(format!("Image \"{}\" displayed!", info.image_file_path)),
+            Print(format!(
+                "mag: {}, center: ({:.2}, {:.2})",
+                info.magnify, info.center.0, info.center.1
+            )),
             MoveTo(0, term_height - 1),
         )
         .unwrap();

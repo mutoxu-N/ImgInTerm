@@ -1,5 +1,3 @@
-// use crate::mod_display::{DisplayInfo};
-
 use std::cmp::{max, min};
 use std::io::{stdout, Error, Write};
 
@@ -10,25 +8,30 @@ use crossterm::event::{read, Event, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::style::Print;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::{execute, queue};
-use image::open;
 
-use crate::mod_display::{display, DisplayInfo};
+use crate::mod_display::DisplayInfo;
 
-pub fn handle_events() -> Result<bool, Error> {
+struct Config {
+    magnify_step: f64,
+}
+
+static CONFIG: Config = Config { magnify_step: 0.1 };
+
+pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
     match read() {
         Ok(Event::Key(key_event)) if key_event.kind == KeyEventKind::Press => {
-            handle_key_events(key_event)
+            handle_key_events(key_event, info)
         }
         Err(e) => Err(e),
         _ => Ok(true),
     }
 }
 
-fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
-    // println!(
-    //     "key_event: {:#?}, {:#?}",
-    //     key_event.modifiers, key_event.code
-    // );
+fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool, Error> {
+    println!(
+        "key_event: {:#?}, {:#?}",
+        key_event.modifiers, key_event.code
+    );
 
     match key_event.modifiers {
         // simple key
@@ -42,13 +45,13 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
                     Print(format!("file_path: {}", file_path)),
                 )
                 .unwrap();
-                let image = open(&file_path);
-                let info = DisplayInfo {
-                    image_file_path: file_path.clone(),
-                    magnify: 1.0,
-                    center: (-1.0, -1.0),
-                };
-                display(image, info);
+                info.image_file_path = file_path.clone();
+                Ok(true)
+            }
+            Char('-') => {
+                if info.magnify > CONFIG.magnify_step {
+                    info.magnify -= CONFIG.magnify_step;
+                }
                 Ok(true)
             }
             _ => Ok(true),
@@ -56,6 +59,13 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
         // ctrl pressed
         KeyModifiers::CONTROL => match key_event.code {
             Char('c') => Ok(false),
+            _ => Ok(true),
+        },
+        KeyModifiers::SHIFT => match key_event.code {
+            Char('+') => {
+                info.magnify += CONFIG.magnify_step;
+                Ok(true)
+            }
             _ => Ok(true),
         },
         _ => Ok(true),
