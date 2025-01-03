@@ -37,7 +37,7 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
             Char('o') => {
                 let file_path = input_new_file_path()?;
                 println!("file_path: {}", file_path);
-                let image = open(file_path.clone());
+                let image = open(&file_path);
                 let info = DisplayInfo {
                     image_file_path: file_path.clone(),
                 };
