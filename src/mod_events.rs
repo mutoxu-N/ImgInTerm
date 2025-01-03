@@ -65,19 +65,47 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 Ok(true)
             }
             Char('h') => {
-                info.center.0 -= CONFIG.move_step_ratio * info.clip_size.0;
+                if info.clip_size.0 > 0.0
+                    && info.center.0
+                        - CONFIG.move_step_ratio * info.clip_size.0
+                        - info.clip_size.0 / 2.0
+                        > 0.0
+                {
+                    info.center.0 -= CONFIG.move_step_ratio * info.clip_size.0;
+                }
                 Ok(true)
             }
             Char('l') => {
-                info.center.0 += CONFIG.move_step_ratio * info.clip_size.0;
+                if info.clip_size.0 > 0.0
+                    && info.center.0
+                        + CONFIG.move_step_ratio * info.clip_size.0
+                        + info.clip_size.0 / 2.0
+                        < info.img_size.0 as f64
+                {
+                    info.center.0 += CONFIG.move_step_ratio * info.clip_size.0;
+                }
                 Ok(true)
             }
             Char('k') => {
-                info.center.1 -= CONFIG.move_step_ratio * info.clip_size.1;
+                if info.clip_size.1 > 0.0
+                    && info.center.1
+                        - CONFIG.move_step_ratio * info.clip_size.1
+                        - info.clip_size.1 / 2.0
+                        > 0.0
+                {
+                    info.center.1 -= CONFIG.move_step_ratio * info.clip_size.1;
+                }
                 Ok(true)
             }
             Char('j') => {
-                info.center.1 += CONFIG.move_step_ratio * info.clip_size.1;
+                if info.clip_size.1 > 0.0
+                    && info.center.1
+                        + CONFIG.move_step_ratio * info.clip_size.1
+                        + info.clip_size.1 / 2.0
+                        < info.img_size.1 as f64
+                {
+                    info.center.1 += CONFIG.move_step_ratio * info.clip_size.1;
+                }
                 Ok(true)
             }
             _ => Ok(true),
