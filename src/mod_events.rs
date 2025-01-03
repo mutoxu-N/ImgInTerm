@@ -35,7 +35,7 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
         KeyModifiers::NONE => match key_event.code {
             Char('q') => Ok(false),
             Char('o') => {
-                let file_path = input_new_file_path()?;
+                let file_path = input_box("input file path: ")?;
                 execute!(
                     stdout(),
                     Clear(ClearType::CurrentLine),
@@ -62,9 +62,8 @@ fn handle_key_events(key_event: KeyEvent) -> Result<bool, Error> {
     }
 }
 
-fn input_new_file_path() -> Result<String, Error> {
+fn input_box(input_msg: &str) -> Result<String, Error> {
     // show input message
-    let input_msg = "input new file path: ";
     execute!(stdout(), Clear(ClearType::CurrentLine), Print(input_msg),).unwrap();
     stdout().flush().unwrap();
 
