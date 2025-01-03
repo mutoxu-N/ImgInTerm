@@ -28,6 +28,11 @@ pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
 }
 
 fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool, Error> {
+    // println!("{} + {}", key_event.modifiers, key_event.code);
+    if key_event.kind != KeyEventKind::Press {
+        return Ok(true);
+    };
+
     match key_event.modifiers {
         // simple key
         KeyModifiers::NONE => match key_event.code {
@@ -41,6 +46,12 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 )
                 .unwrap();
                 info.image_file_path = file_path.clone();
+                Ok(true)
+            }
+            Char('+') => {
+                if info.magnify >= 1.0 + CONFIG.magnify_step {
+                    info.magnify -= CONFIG.magnify_step;
+                }
                 Ok(true)
             }
             Char('-') => {
