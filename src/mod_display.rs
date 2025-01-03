@@ -114,7 +114,6 @@ pub fn display(info: &mut DisplayInfo) {
         queue!(
             stdout(),
             MoveTo(0, term_height - 1),
-            // Print(format!("Image \"{}\" displayed!", info.image_file_path)),
             Print(format!(
                 "magnify: x{:.2}, center: ({:.2}, {:.2})",
                 info.magnify, info.center.0, info.center.1

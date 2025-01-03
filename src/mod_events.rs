@@ -52,13 +52,13 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 info.image_file_path = file_path.clone();
                 Ok(true)
             }
-            Char('+') => {
+            Char('+') | Char('w') => {
                 if info.magnify >= 1.0 + CONFIG.magnify_step {
-                    info.magnify -= CONFIG.magnify_step;
+                    info.magnify += CONFIG.magnify_step;
                 }
                 Ok(true)
             }
-            Char('-') => {
+            Char('-') | Char('s') => {
                 if info.magnify >= 1.0 + CONFIG.magnify_step {
                     info.magnify -= CONFIG.magnify_step;
                 }
