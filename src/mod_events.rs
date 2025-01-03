@@ -108,6 +108,10 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 }
                 Ok(true)
             }
+            Char('r') => {
+                info.center = (-1.0, -1.0);
+                Ok(true)
+            }
             _ => Ok(true),
         },
         // ctrl pressed
