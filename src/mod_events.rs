@@ -13,9 +13,13 @@ use crate::mod_display::DisplayInfo;
 
 struct Config {
     magnify_step: f64,
+    move_step_ratio: f64,
 }
 
-static CONFIG: Config = Config { magnify_step: 0.1 };
+static CONFIG: Config = Config {
+    magnify_step: 0.1,
+    move_step_ratio: 0.05,
+};
 
 pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
     match read() {
@@ -58,6 +62,22 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 if info.magnify >= 1.0 + CONFIG.magnify_step {
                     info.magnify -= CONFIG.magnify_step;
                 }
+                Ok(true)
+            }
+            Char('h') => {
+                info.center.0 -= CONFIG.move_step_ratio * info.clip_size.0;
+                Ok(true)
+            }
+            Char('l') => {
+                info.center.0 += CONFIG.move_step_ratio * info.clip_size.0;
+                Ok(true)
+            }
+            Char('j') => {
+                info.center.1 -= CONFIG.move_step_ratio * info.clip_size.1;
+                Ok(true)
+            }
+            Char('k') => {
+                info.center.1 += CONFIG.move_step_ratio * info.clip_size.1;
                 Ok(true)
             }
             _ => Ok(true),

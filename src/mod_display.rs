@@ -11,6 +11,8 @@ pub struct DisplayInfo {
     pub image_file_path: String,
     pub magnify: f64,
     pub center: (f64, f64),
+    pub clip_size: (f64, f64),
+    pub img_size: (u32, u32),
 }
 
 pub fn display(info: &mut DisplayInfo) {
@@ -42,6 +44,8 @@ pub fn display(info: &mut DisplayInfo) {
         let image = if info.center.0 < 0.0 || info.center.1 < 0.0 {
             // if default size
             info.center = (image.width() as f64 / 2.0, image.height() as f64 / 2.0);
+            info.clip_size = (image.width() as f64, image.height() as f64);
+            info.img_size = (image.width(), image.height());
             image.resize(win_width, win_height, image::imageops::FilterType::Nearest)
         } else {
             // if clipping needed
@@ -59,6 +63,7 @@ pub fn display(info: &mut DisplayInfo) {
                     (img_width, img_width / win_width as f64 * win_height as f64)
                 };
             let (clip_width, clip_height) = (clip_width / info.magnify, clip_height / info.magnify);
+            info.clip_size = (clip_width, clip_height);
 
             let (l, t) = (
                 (info.center.0 - clip_width / 2.0) as u32,

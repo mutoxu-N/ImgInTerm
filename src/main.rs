@@ -29,6 +29,8 @@ fn main() {
         image_file_path: image_path.to_string(),
         magnify: 1.0,
         center: (-1.0, -1.0),
+        clip_size: (-1.0, -1.0),
+        img_size: (0, 0),
     };
     mod_display::display(&mut info);
     let mut current_info = info.clone();
