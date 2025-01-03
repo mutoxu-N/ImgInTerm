@@ -3,7 +3,7 @@ use std::io::{stdout, Write};
 use crossterm::cursor::MoveTo;
 use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
 use crossterm::{queue, terminal};
-use image::{DynamicImage, GenericImageView, ImageError, RgbaImage};
+use image::{open, DynamicImage, GenericImageView, RgbaImage};
 use image::{GenericImage, Rgba};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -13,9 +13,11 @@ pub struct DisplayInfo {
     pub center: (f64, f64),
 }
 
-pub fn display(image: Result<DynamicImage, ImageError>, info: &mut DisplayInfo) {
+pub fn display(info: &mut DisplayInfo) {
     // clear terminal
     queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
+
+    let image = open(&info.image_file_path);
 
     // get terminal size
     if image.is_ok() {
