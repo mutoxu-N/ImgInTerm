@@ -72,11 +72,11 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 info.center.0 += CONFIG.move_step_ratio * info.clip_size.0;
                 Ok(true)
             }
-            Char('j') => {
+            Char('k') => {
                 info.center.1 -= CONFIG.move_step_ratio * info.clip_size.1;
                 Ok(true)
             }
-            Char('k') => {
+            Char('j') => {
                 info.center.1 += CONFIG.move_step_ratio * info.clip_size.1;
                 Ok(true)
             }
