@@ -28,11 +28,6 @@ pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
 }
 
 fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool, Error> {
-    println!(
-        "key_event: {:#?}, {:#?}",
-        key_event.modifiers, key_event.code
-    );
-
     match key_event.modifiers {
         // simple key
         KeyModifiers::NONE => match key_event.code {
@@ -49,7 +44,7 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 Ok(true)
             }
             Char('-') => {
-                if info.magnify > CONFIG.magnify_step {
+                if info.magnify >= 1.0 + CONFIG.magnify_step {
                     info.magnify -= CONFIG.magnify_step;
                 }
                 Ok(true)
