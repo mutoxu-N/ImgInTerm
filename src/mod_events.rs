@@ -13,12 +13,16 @@ use crate::mod_display::DisplayInfo;
 
 struct Config {
     magnify_step: f64,
+    magnify_step_large: f64,
     move_step_ratio: f64,
+    move_step_ratio_large: f64,
 }
 
 static CONFIG: Config = Config {
     magnify_step: 0.1,
+    magnify_step_large: 1.0,
     move_step_ratio: 0.05,
+    move_step_ratio_large: 0.2,
 };
 
 pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
@@ -52,13 +56,13 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 info.image_file_path = file_path.clone();
                 Ok(true)
             }
-            Char('+') | Char('w') => {
+            Char('w') => {
                 if info.magnify >= 1.0 + CONFIG.magnify_step {
                     info.magnify += CONFIG.magnify_step;
                 }
                 Ok(true)
             }
-            Char('-') | Char('s') => {
+            Char('s') => {
                 if info.magnify >= 1.0 + CONFIG.magnify_step {
                     info.magnify -= CONFIG.magnify_step;
                 }
@@ -124,6 +128,61 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 info.magnify += CONFIG.magnify_step;
                 Ok(true)
             }
+            Char('W') => {
+                info.magnify += CONFIG.magnify_step_large;
+                Ok(true)
+            }
+            Char('S') => {
+                if info.magnify - CONFIG.magnify_step_large > 1.0 {
+                    info.magnify -= CONFIG.magnify_step_large;
+                }
+                Ok(true)
+            }
+            Char('H') => {
+                if info.clip_size.0 > 0.0
+                    && info.center.0
+                        - CONFIG.move_step_ratio_large * info.clip_size.0
+                        - info.clip_size.0 / 2.0
+                        > 0.0
+                {
+                    info.center.0 -= CONFIG.move_step_ratio_large * info.clip_size.0;
+                }
+                Ok(true)
+            }
+            Char('L') => {
+                if info.clip_size.0 > 0.0
+                    && info.center.0
+                        + CONFIG.move_step_ratio_large * info.clip_size.0
+                        + info.clip_size.0 / 2.0
+                        < info.img_size.0 as f64
+                {
+                    info.center.0 += CONFIG.move_step_ratio_large * info.clip_size.0;
+                }
+                Ok(true)
+            }
+            Char('K') => {
+                if info.clip_size.1 > 0.0
+                    && info.center.1
+                        - CONFIG.move_step_ratio_large * info.clip_size.1
+                        - info.clip_size.1 / 2.0
+                        > 0.0
+                {
+                    info.center.1 -= CONFIG.move_step_ratio_large * info.clip_size.1;
+                }
+                Ok(true)
+            }
+            Char('J') => {
+                if info.clip_size.1 > 0.0
+                    && info.center.1
+                        + CONFIG.move_step_ratio_large * info.clip_size.1
+                        + info.clip_size.1 / 2.0
+                        < info.img_size.1 as f64
+                {
+                    info.center.1 += CONFIG.move_step_ratio_large * info.clip_size.1;
+                }
+                Ok(true)
+            }
+
             _ => Ok(true),
         },
         _ => Ok(true),
