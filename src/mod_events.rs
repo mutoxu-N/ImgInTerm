@@ -57,9 +57,7 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 Ok(true)
             }
             Char('w') => {
-                if info.magnify >= 1.0 + CONFIG.magnify_step {
-                    info.magnify += CONFIG.magnify_step;
-                }
+                info.magnify += CONFIG.magnify_step;
                 Ok(true)
             }
             Char('s') => {
@@ -114,6 +112,7 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
             }
             Char('r') => {
                 info.center = (-1.0, -1.0);
+                info.magnify = 1.0;
                 Ok(true)
             }
             _ => Ok(true),
