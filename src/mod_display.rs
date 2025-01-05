@@ -31,10 +31,16 @@ pub fn display(info: &mut DisplayInfo) {
         let (win_width, win_height) = (win_width as u32, win_height as u32);
 
         // create background
-        let bg_color = Rgba([0, 0, 0, 255]);
+        let bg_color_light = Rgba([153, 153, 153, 0]);
+        let bg_color_dark = Rgba([102, 102, 102, 0]);
         let mut bg = DynamicImage::ImageRgba8(RgbaImage::new(win_width, win_height));
         for y in 0..win_height {
             for x in 0..win_width {
+                let bg_color = if (x + y) % 2 == 0 {
+                    bg_color_light
+                } else {
+                    bg_color_dark
+                };
                 bg.put_pixel(x, y, bg_color);
             }
         }
@@ -83,6 +89,13 @@ pub fn display(info: &mut DisplayInfo) {
             for x in 0..img_width {
                 let pixel = image.get_pixel(x, y);
                 buffer.put_pixel(x + anchor_x, y + anchor_y, pixel);
+
+                let bg_pixel = bg.get_pixel(x + anchor_x, y + anchor_y);
+                bg.put_pixel(
+                    x + anchor_x,
+                    y + anchor_y,
+                    Rgba([bg_pixel[0], bg_pixel[1], bg_pixel[2], 255]),
+                );
             }
         }
 
@@ -130,10 +143,14 @@ pub fn display(info: &mut DisplayInfo) {
 }
 
 fn blend(pixel: Rgba<u8>, bg: Rgba<u8>) -> Color {
-    let alpha = pixel[3] as f64 / 255.0;
-    Color::Rgb {
-        r: (pixel[0] as f64 * alpha + bg[0] as f64 * (1.0 - alpha)) as u8,
-        g: (pixel[1] as f64 * alpha + bg[1] as f64 * (1.0 - alpha)) as u8,
-        b: (pixel[2] as f64 * alpha + bg[2] as f64 * (1.0 - alpha)) as u8,
+    if bg[3] == 0 {
+        Color::Rgb { r: 0, g: 0, b: 0 }
+    } else {
+        let alpha = pixel[3] as f64 / 255.0;
+        Color::Rgb {
+            r: (pixel[0] as f64 * alpha + bg[0] as f64 * (1.0 - alpha)) as u8,
+            g: (pixel[1] as f64 * alpha + bg[1] as f64 * (1.0 - alpha)) as u8,
+            b: (pixel[2] as f64 * alpha + bg[2] as f64 * (1.0 - alpha)) as u8,
+        }
     }
 }
