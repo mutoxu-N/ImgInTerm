@@ -35,6 +35,10 @@ pub fn handle_events(
         Ok(Event::Key(key_event)) if key_event.kind == KeyEventKind::Press => {
             handle_key_events(key_event, image, info)
         }
+        Ok(Event::Resize(_, _)) => {
+            info.clip_size = (-1.0, -1.0);
+            Ok(true)
+        }
         Err(e) => Err(e),
         _ => Ok(true),
     }
