@@ -9,6 +9,8 @@ use crossterm::style::Print;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::{execute, queue};
 
+use image::{open, DynamicImage, ImageError};
+
 use crate::mod_display::DisplayInfo;
 
 struct Config {
@@ -25,17 +27,24 @@ static CONFIG: Config = Config {
     move_step_ratio_large: 0.2,
 };
 
-pub fn handle_events(info: &mut DisplayInfo) -> Result<bool, Error> {
+pub fn handle_events(
+    image: &mut Result<DynamicImage, ImageError>,
+    info: &mut DisplayInfo,
+) -> Result<bool, Error> {
     match read() {
         Ok(Event::Key(key_event)) if key_event.kind == KeyEventKind::Press => {
-            handle_key_events(key_event, info)
+            handle_key_events(key_event, image, info)
         }
         Err(e) => Err(e),
         _ => Ok(true),
     }
 }
 
-fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool, Error> {
+fn handle_key_events(
+    key_event: KeyEvent,
+    image: &mut Result<DynamicImage, ImageError>,
+    info: &mut DisplayInfo,
+) -> Result<bool, Error> {
     // println!("{} + {}", key_event.modifiers, key_event.code);
     if key_event.kind != KeyEventKind::Press {
         return Ok(true);
@@ -53,6 +62,7 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                     Print(format!("file_path: {}", file_path)),
                 )
                 .unwrap();
+                *image = open(file_path.clone());
                 info.image_file_path = file_path.clone();
                 info.magnify = 1.0;
                 info.center = (-1.0, -1.0);

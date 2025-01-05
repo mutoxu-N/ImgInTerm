@@ -3,7 +3,7 @@ use std::io::{stdout, Write};
 use crossterm::cursor::MoveTo;
 use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
 use crossterm::{queue, terminal};
-use image::{open, DynamicImage, GenericImageView, RgbaImage};
+use image::{DynamicImage, GenericImageView, ImageError, RgbaImage};
 use image::{GenericImage, Rgba};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -15,11 +15,9 @@ pub struct DisplayInfo {
     pub img_size: (u32, u32),
 }
 
-pub fn display(info: &mut DisplayInfo) {
+pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo) {
     // clear terminal
     queue!(stdout(), terminal::Clear(terminal::ClearType::All)).unwrap();
-
-    let image = open(&info.image_file_path);
 
     // get terminal size
     if image.is_ok() {
@@ -46,16 +44,16 @@ pub fn display(info: &mut DisplayInfo) {
         }
 
         // load, resize and clip image
-        let mut image = image.unwrap();
-        let image = if info.center.0 < 0.0 || info.center.1 < 0.0 {
+        let img = image.as_ref().unwrap();
+        let img = if info.center.0 < 0.0 || info.center.1 < 0.0 {
             // if default size
-            info.center = (image.width() as f64 / 2.0, image.height() as f64 / 2.0);
-            info.clip_size = (image.width() as f64, image.height() as f64);
-            info.img_size = (image.width(), image.height());
-            image.resize(win_width, win_height, image::imageops::FilterType::Nearest)
+            info.center = (img.width() as f64 / 2.0, img.height() as f64 / 2.0);
+            info.clip_size = (img.width() as f64, img.height() as f64);
+            info.img_size = (img.width(), img.height());
+            img.resize(win_width, win_height, image::imageops::FilterType::Nearest)
         } else {
             // if clipping needed
-            let (img_width, img_height) = image.dimensions();
+            let (img_width, img_height) = img.dimensions();
             let (img_width, img_height) = (img_width as f64, img_height as f64);
             let (clip_width, clip_height) =
                 if img_height / img_width > win_height as f64 / win_width as f64 {
@@ -75,11 +73,11 @@ pub fn display(info: &mut DisplayInfo) {
                 (info.center.0 - clip_width / 2.0) as u32,
                 (info.center.1 - clip_height / 2.0) as u32,
             );
-            image
-                .crop(l, t, clip_width as u32, clip_height as u32)
+            let mut img = img.clone();
+            img.crop(l, t, clip_width as u32, clip_height as u32)
                 .resize(win_width, win_height, image::imageops::FilterType::Nearest)
         };
-        let (img_width, img_height) = image.dimensions();
+        let (img_width, img_height) = img.dimensions();
 
         // create buffer
         let mut buffer = DynamicImage::ImageRgba8(RgbaImage::new(win_width, win_height));
@@ -87,7 +85,7 @@ pub fn display(info: &mut DisplayInfo) {
         let (anchor_x, anchor_y) = ((win_width - img_width) / 2, (win_height - img_height) / 2);
         for y in 0..img_height {
             for x in 0..img_width {
-                let pixel = image.get_pixel(x, y);
+                let pixel = img.get_pixel(x, y);
                 buffer.put_pixel(x + anchor_x, y + anchor_y, pixel);
 
                 let bg_pixel = bg.get_pixel(x + anchor_x, y + anchor_y);
@@ -137,7 +135,8 @@ pub fn display(info: &mut DisplayInfo) {
         stdout().flush().unwrap();
     } else {
         // Image open error
-        println!("Error: {}", image.unwrap_err());
+        let err = image.as_ref().unwrap_err();
+        println!("Error: {}", err);
         println!("Image path: {}", info.image_file_path);
     }
 }
