@@ -54,6 +54,8 @@ fn handle_key_events(key_event: KeyEvent, info: &mut DisplayInfo) -> Result<bool
                 )
                 .unwrap();
                 info.image_file_path = file_path.clone();
+                info.magnify = 1.0;
+                info.center = (-1.0, -1.0);
                 Ok(true)
             }
             Char('w') => {
