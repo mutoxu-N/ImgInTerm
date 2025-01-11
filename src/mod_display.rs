@@ -130,15 +130,15 @@ pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo)
 
             let title = format!("Image In Terminal - v{}", version);
             let msgs = [
-                "w: zoom in".to_string(),
-                "s: zoom out".to_string(),
-                "h: move left".to_string(),
-                "l: move right".to_string(),
-                "j: move down".to_string(),
-                "k: move up".to_string(),
-                "y: hide help".to_string(),
-                "o: open image".to_string(),
-                "q: exit".to_string(),
+                "w/W: zoom in".to_string(),
+                "s/S: zoom out".to_string(),
+                "h/H: move left".to_string(),
+                "l/L: move right".to_string(),
+                "j/J: move down".to_string(),
+                "k/K: move up".to_string(),
+                " y : hide help".to_string(),
+                " o : open image".to_string(),
+                " q : exit".to_string(),
             ];
 
             let (mut w2, h) = (0, msgs.len() as u16 + 2);
