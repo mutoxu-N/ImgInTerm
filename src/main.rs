@@ -15,8 +15,6 @@ use mod_events::handle_events;
 
 fn main() {
     let args = std::env::args().collect::<Vec<String>>();
-    println!("args: {:#?}", args);
-
     let image_path = if args.len() > 1 {
         &args[1]
     } else {
