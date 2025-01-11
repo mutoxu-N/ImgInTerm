@@ -140,10 +140,12 @@ pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo)
         let err = image.as_ref().unwrap_err();
         queue!(
             stdout(),
-            MoveTo(0, term_height - 2),
+            MoveTo(0, term_height - 3),
             Print(format!("Error: {}", err)),
-            MoveTo(0, term_height - 1),
+            MoveTo(0, term_height - 2),
             Print(format!("Image path: {}", info.image_file_path)),
+            MoveTo(0, term_height - 1),
+            Print("Press 'o' to type file path or 'q' to exit."),
             MoveTo(0, term_height - 1),
         )
         .unwrap();
