@@ -2,7 +2,7 @@
 PROJECT_NAME := img_in_term
 
 # バージョン
-VERSION := 0.1.1
+VERSION := 0.1.2
 
 # インストール先
 PREFIX := /usr/local
