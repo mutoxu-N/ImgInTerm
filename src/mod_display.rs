@@ -13,6 +13,7 @@ pub struct DisplayInfo {
     pub center: (f64, f64),
     pub clip_size: (f64, f64),
     pub img_size: (u32, u32),
+    pub show_help: bool,
 }
 
 pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo) {
@@ -122,6 +123,96 @@ pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo)
                 .unwrap();
             }
         }
+
+        // show help
+        if info.show_help {
+            let version = env!("CARGO_PKG_VERSION");
+
+            let title = format!("Image In Terminal - v{}", version);
+            let msgs = [
+                "w: zoom in".to_string(),
+                "s: zoom out".to_string(),
+                "h: move left".to_string(),
+                "l: move right".to_string(),
+                "j: move down".to_string(),
+                "k: move up".to_string(),
+                "y: hide help".to_string(),
+                "o: open image".to_string(),
+                "q: exit".to_string(),
+            ];
+
+            let (mut w2, h) = (0, msgs.len() as u16 + 2);
+            for msg in &msgs {
+                w2 = w2.max(msg.len() as u16);
+            }
+            let w1 = w2.max(title.len() as u16);
+
+            let (anchor_help_w, anchor_help_h) = (
+                (term_width - w1 - 4) / 2,
+                (term_height - h - 2) / 2,
+            );
+
+            let help_padding = (w1 - w2) / 2;
+
+            // show border
+            for x in 0..(w1 + 4) {
+                queue!(
+                    stdout(),
+                    MoveTo(anchor_help_w + x, anchor_help_h),
+                    ResetColor,
+                    Print(if x == 0 || x == w1 + 3 { "\u{2588}" } else { "\u{2580}" }),
+                )
+                .unwrap();
+            }
+
+            for y in 0..h {
+                for x in 0..(w1 + 4) {
+                    queue!(
+                        stdout(),
+                        MoveTo(anchor_help_w + x, anchor_help_h+1 + y),
+                        ResetColor,
+                        Print(if x == 0 || x == w1 + 3 { "\u{2588}" } else { " " }),
+                    )
+                    .unwrap();
+                }
+            }
+            for x in 0..(w1 + 4) {
+                queue!(
+                    stdout(),
+                    MoveTo(anchor_help_w + x, anchor_help_h+h+1),
+                    ResetColor,
+                    Print(if x == 0 || x == w1 + 3 { "\u{2588}" } else { "\u{2584}" }),
+                )
+                .unwrap();
+            }
+            // show title
+            queue!(
+                stdout(),
+                MoveTo(anchor_help_w, anchor_help_h + 1),
+                Print("\u{2588} "),
+                MoveTo(anchor_help_w+2,  anchor_help_h + 1),
+                Print(&title),
+                MoveTo(anchor_help_w + 2 + w1,  anchor_help_h + 1),
+                Print(" \u{2588}"),
+            )
+            .unwrap();
+
+            // show help message
+
+            for (i, msg) in msgs.iter().enumerate() {
+                queue!(
+                    stdout(),
+                    MoveTo(anchor_help_w + 2 + help_padding, anchor_help_h + 3 + i as u16),
+                    Print(msg),
+                )
+                .unwrap();
+            }
+        }
+
+        let show_hint_msg = format!(
+            "Press 'y' to {} help",
+            if info.show_help { "hide" } else { "show" }
+        );
         queue!(
             stdout(),
             MoveTo(0, term_height - 1),
@@ -129,6 +220,8 @@ pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo)
                 "magnify: x{:.2}, center: ({:.2}, {:.2})",
                 info.magnify, info.center.0, info.center.1
             )),
+            MoveTo(term_width - (show_hint_msg.len() as u16), term_height - 1),
+            Print(show_hint_msg),
             MoveTo(0, term_height - 1),
         )
         .unwrap();

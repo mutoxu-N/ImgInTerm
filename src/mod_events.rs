@@ -131,6 +131,10 @@ fn handle_key_events(
                 info.magnify = 1.0;
                 Ok(true)
             }
+            Char('y') => {
+                info.show_help = !info.show_help;
+                Ok(true)
+            }
             _ => Ok(true),
         },
         // ctrl pressed

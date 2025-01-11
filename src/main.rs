@@ -32,6 +32,7 @@ fn main() {
         center: (-1.0, -1.0),
         clip_size: (-1.0, -1.0),
         img_size: (0, 0),
+        show_help: false,
     };
     let mut image = open(&info.image_file_path);
     display(&image, &mut info);
