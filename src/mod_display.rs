@@ -134,10 +134,20 @@ pub fn display(image: &Result<DynamicImage, ImageError>, info: &mut DisplayInfo)
         .unwrap();
         stdout().flush().unwrap();
     } else {
+        let (_, term_height) = terminal::size().unwrap();
+
         // Image open error
         let err = image.as_ref().unwrap_err();
-        println!("Error: {}", err);
-        println!("Image path: {}", info.image_file_path);
+        queue!(
+            stdout(),
+            MoveTo(0, term_height - 2),
+            Print(format!("Error: {}", err)),
+            MoveTo(0, term_height - 1),
+            Print(format!("Image path: {}", info.image_file_path)),
+            MoveTo(0, term_height - 1),
+        )
+        .unwrap();
+        stdout().flush().unwrap();
     }
 }
 
